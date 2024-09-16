@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "ethers": "5.7.2"
+    "ethers": "^6.13.2",
+    "hexstripzeros": "0.0.2"
   }
 }

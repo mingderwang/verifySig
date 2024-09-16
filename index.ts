@@ -1,5 +1,6 @@
 // importing the required modules from ethers.js
-const { JsonRpcProvider, hashMessage, Contract } = require("ethers");
+import { hexStripZeros } from "hexstripzeros";
+const { ethers, JsonRpcProvider, hashMessage, Contract } = require("ethers");
 
 // importing ABI for interface of ERC1271 so we can call the `isValidSignature` function
 const IERC1271Abi = [{"inputs":[{"internalType":"address[]","name":"addrs","type":"address[]"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"},{"indexed":false,"internalType":"bytes","name":"data","type":"bytes"},{"indexed":false,"internalType":"bytes","name":"returnData","type":"bytes"}],"name":"LogErr","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"addr","type":"address"},{"indexed":false,"internalType":"bytes32","name":"priv","type":"bytes32"}],"name":"LogPrivilegeChanged","type":"event"},{"stateMutability":"payable","type":"fallback"},{"inputs":[{"components":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"internalType":"struct Identity.Transaction[]","name":"txns","type":"tuple[]"},{"internalType":"bytes","name":"signature","type":"bytes"}],"name":"execute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"internalType":"struct Identity.Transaction[]","name":"txns","type":"tuple[]"}],"name":"executeBySelf","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"internalType":"struct Identity.Transaction[]","name":"txns","type":"tuple[]"}],"name":"executeBySender","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hash","type":"bytes32"},{"internalType":"bytes","name":"signature","type":"bytes"}],"name":"isValidSignature","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nonce","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"privileges","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"},{"internalType":"bytes32","name":"priv","type":"bytes32"}],"name":"setAddrPrivilege","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceID","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"tipMiner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"tryCatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}]
@@ -16,7 +17,7 @@ const isValidSignature = async (signingAddress, message, signature) => {
   ); // get your provider
   const bytecode = await provider.getCode(signingAddress); // get the bytecode
   console.log(bytecode)
-  const isSmartContract = bytecode; // && hexStripZeros(bytecode) !== "0x"; // check if it is a smart contract wallet
+  const isSmartContract = bytecode && hexStripZeros(bytecode) !== "0x"; // check if it is a smart contract wallet
 
   if (isSmartContract) {
     // verify the message for a decentralized account (contract wallet)
@@ -26,7 +27,7 @@ const isValidSignature = async (signingAddress, message, signature) => {
     return verification === MAGICVALUE; // return true or false based on if the signature is valid or not
   } else {
     // verify the message for an externally owned account (EOA) using the recovery algorithm
-    const sig = ethers.utils.splitSignature(signature);
+    const sig = ethers.Signature.from(signature);
     const recovered = await contract.verifyHash(hash, sig.v, sig.r, sig.s);
     console.log("Message is verified?", recovered === signingAddress);
     return recovered === signingAddress;
@@ -35,9 +36,9 @@ const isValidSignature = async (signingAddress, message, signature) => {
 
 async function main() {
   let isValid = await isValidSignature(
-    "0x4836a472ab1dd406ecb8d0f933a985541ee3921f",
-    "0x787177",
-    "0xc0f8db6019888d87a0afc1299e81ef45d3abce64f63072c8d7a6ef00f5f82c1522958ff110afa98b8c0d23b558376db1d2fbab4944e708f8bf6dc7b977ee07201b00"
+    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "0xb6e16d27ac5ab427a7f68900ac5559ce272dc6c37c82b3e052246c82244c50e4",
+    "0x994dd6d8a495ad318d3bc3ed23bb09d61fe897f75161293468098a2d8c8cfa78425f94142fde94ddfac32b42af1c7b1f9802e2b4b82301cccc951f056439ff581c"
   );
 
   console.log(isValid);
