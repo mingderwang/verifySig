@@ -1,6 +1,8 @@
 {
   "name": "verifysig",
   "module": "index.ts",
+  "version": "v0.0.2",
+  "license": "MIT",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest"
