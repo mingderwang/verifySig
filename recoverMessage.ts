@@ -1,4 +1,4 @@
-import { id, ethers, Wallet, Contract, Signature } from 'ethers';
+import { id, ethers, hashMessage, Wallet, Contract, Signature } from 'ethers';
 const contractAddress = "0xf554DA5e35b2e40C09DDB481545A395da1736513";
 const contract = new Contract(contractAddress, [
   "function recoverStringFromCompact(string message, (bytes32 r, bytes32 yParityAndS) sig) pure returns (address)",
@@ -15,6 +15,8 @@ console.log('signer: ' + signer.address)
 // Our message
 const message = "Hello World";
 console.log('message: ' + message)
+const hash = hashMessage(message)
+console.log('hash message: ' + hash)
 
 // The raw signature; 65 bytes
 const rawSig = await signer.signMessage(message);
@@ -30,8 +32,17 @@ console.log(sig)
 // can be passed as the struct value directly, since the
 // parser will pull out the matching struct keys from sig.
 const signerAddress = await contract.recoverStringFromCompact(message, sig);
+const signerAddress2 = await contract.recoverStringFromExpanded(message, sig);
+const signerAddress3 = await contract.recoverStringFromRaw(message, rawSig);
 // '0x0A489345F9E9bc5254E18dd14fA7ECfDB2cE5f21'
 
+console.log('v: ' + sig.v)
+console.log('r: ' + sig.r)
+console.log('s: ' + sig.s)
+console.log('yParityAndS: ' + sig.yParityAndS)
+
 console.log('recover signer address: ' + signerAddress)
+console.log('recover signer address: ' + signerAddress2)
+console.log('recover signer address: ' + signerAddress3)
 
 
